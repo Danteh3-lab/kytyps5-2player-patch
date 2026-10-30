@@ -7,6 +7,15 @@ controllers.
 
 No game files are included or modified.
 
+## Quick start
+
+1. Download **KytyPS5-UFC6-2player-v3.zip** from the
+   [Releases page](https://github.com/Danteh3-lab/kytyps5-2player-patch/releases/tag/v3)
+   (the full emulator, already patched) and unpack it into a folder of its own.
+2. Run `kyty_launcher.exe` and add the folder that contains your own UFC 6 dump as a game folder.
+3. Connect controller 1 first, then controller 2.
+4. Select UFC 6 and press Start. Local versus works with both controllers.
+
 ## What it does
 
 - **User service**: a second user (configured `user_id` + 1, i.e. 1001 by default) is logged
