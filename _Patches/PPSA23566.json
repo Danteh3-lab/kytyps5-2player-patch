@@ -130,6 +130,18 @@
             ],
             "name": "Real-time game speed v3 (UFC sim timer: real frame time, max 2x per step)",
             "type": "checkbox"
+        },
+        {
+            "enabled": false,
+            "memory": [
+                {
+                    "off": "554889E54157",
+                    "offset": "0x05EF9BB0",
+                    "on": "B801000000C3"
+                }
+            ],
+            "name": "Unlock all fighters (fighter-unlock check always returns unlocked)",
+            "type": "checkbox"
         }
     ],
     "name": "EA SPORTS UFC 6",

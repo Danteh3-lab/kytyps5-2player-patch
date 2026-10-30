@@ -60,3 +60,21 @@ Thinner crowd 75% / 50% / 25%
   Replace the attendanceLevel shader constant read at 0x4A1C337 with a read of a constant 0.75 /
   0.5 / 0.25. Untested; it may have no visible effect. Tick only one, and not together with
   No crowd.
+
+
+Unlock all fighters
+-------------------
+The fighter select list is built at 0x5EFF830. A fighter is shown as locked when its record
+marks it as lockable (field 0x37) and the check at 0x5EF9BB0 says it is not unlocked yet. That
+check looks the fighter id (field 0x31) up in the profile's unlocked-fighter data (the save
+entry unlocked_fighter_meta_data). Career mode (HAS_LOCKED_CONTENT) and the prestige screens use
+the same check; every caller treats true as unlocked.
+
+Patch: 0x05EF9BB0 554889E54157 -> B801000000C3 (mov eax,1; ret), so every fighter counts as
+unlocked. The save is not changed; untick it and the old locks come back.
+Tested: every fighter shows as unlocked on fighter select.
+
+Not covered: the career DLC flags behind career:progression:get-is-dlc-fighter-unlocked, the
+store purchased/installed check (0x562BD30), and fighters hidden from the roster entirely
+(hidden_fighter_meta_data). A fighter whose files are missing from your install may crash
+when picked.

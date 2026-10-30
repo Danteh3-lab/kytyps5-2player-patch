@@ -16,7 +16,7 @@ No game files are included or modified.
 3. Connect controller 1 first, then controller 2.
 4. Select UFC 6 and press Start. Local versus works with both controllers.
 
-## UFC 6 cheats: real-time game speed and no crowd
+## UFC 6 cheats: real-time game speed, no crowd, unlock all fighters
 
 `_Patches/PPSA23566.json` adds options to the launcher's Cheats page for UFC 6 version 01.004.000:
 
@@ -24,6 +24,8 @@ No game files are included or modified.
   down to about 30 fps. Without it, 45-50 fps in big arenas runs the game at about 80% speed. At
   60 fps nothing changes. Don't use it online.
 - **No crowd**: skips crowd rendering. Big arenas went from 45-50 to 55-60 fps.
+- **Unlock all fighters**: every fighter on fighter select counts as unlocked. Your save is not
+  changed.
 - No crowd + no crowd animation, and Thinner crowd 75/50/25%: untested.
 
 To use it, put `PPSA23566.json` in the `_Patches` folder next to `kyty_launcher.exe`. Then open
@@ -82,7 +84,7 @@ Connect player 1's controller first, then player 2's, and start the game from th
 - `KYTY_2P_PATCH_NOTES.txt`: what was patched and why, every patched address with its original
   bytes, known limits and a test plan.
 - `kyty_2p_listing.txt`: disassembly of every patched site and all new code.
-- `_Patches/PPSA23566.json`: UFC 6 cheat file for the launcher (game speed, crowd).
+- `_Patches/PPSA23566.json`: UFC 6 cheat file for the launcher (game speed, crowd, fighter unlocks).
 - `UFC6_CHEAT_NOTES.txt`: what each cheat patches, why, and how it was tested.
 
 ## Known limits
