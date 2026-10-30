@@ -1,0 +1,62 @@
+UFC 6 cheats for the KytyPS5 launcher (PPSA23566, version 01.004.000)
+=====================================================================
+
+File
+  _Patches/PPSA23566.json   cheat file for the launcher's Cheats page (Local cheats tab)
+
+The launcher patches the game in memory while it runs. No game files are modified; unticking an
+option and restarting the game gives the stock game back. Offsets are ELF virtual addresses of
+eboot.bin. The patches only fit version 01.004.000; every entry carries the original bytes.
+
+
+Real-time game speed v3
+-----------------------
+Problem: below 60 fps the game ran slower than real time (about 77-84% speed at 45-50 fps).
+
+Cause: the GameSimulation thread (loop at 0x32f70) runs one sim step per pass. UFC's own sim timer
+(vtable 0x97a12d8, function 0x35100) hands every step a fixed delta of 1/60 s
+(timer +0x20 = 16666666 ns), whatever the real time was. The sim is held back by rendering, so
+fewer than 60 steps per second means less than 60 seconds of game time per minute.
+Frostbite's SimulationTimeSettings confirm it: ForceSimRate 60, MaxVirtualTicks 1.
+
+Fix: each step gets the real time since the previous step, capped at 2 frames (33.3 ms). If the
+value is 0 or less, it falls back to 1/60 s.
+  0x07ED8640  new code, mode 0/1 path: delta = clamp(now - last, 2 * frame)
+  0x07ED86C0  new code, mode 2 path: reads the clock, same clamp
+  0x00035156  jmp to 0x07ED8640 (was: mov rax,[rbx+0x20] ... mov [rbp-0x38],rax)
+  0x0003517B  mov rax,[rbp-0x40] (was: mov rax,[rbx+0x20]), the step's reported delta
+  0x0003538F  jmp to 0x07ED86C0 (was: vmovss xmm0,[r15+4])
+The new code goes in the unused, mapped end of the code segment (0x07ED862C-0x07EDC000, zero
+filled, executable). The file lists those entries first, so the jumps never point at empty memory.
+
+Behaviour:
+  60 fps         identical to stock (each step is exactly 1/60 s)
+  30-60 fps      normal game speed
+  below 30 fps   slows down again (the 2x cap stops jumps after hitches and loading)
+
+Measured in a big-arena fight, read live from emulator memory:
+  sim timer at about 50 steps/s: the game gets 100% of real time (stock: 84%)
+  on-screen round clock: 1.670x real time at 50 and at 56.8 steps/s. UFC runs the round clock
+    at 5/3 real time by design (a 5:00 round lasts 3 real minutes). A step-counting clock would
+    have shown 1.40x and 1.58x.
+A memory scan found a small group of timers that still count steps (fixed 1/60 per step). Most
+timers, including the round clock, follow real time.
+
+Do not use it online: it changes how the game counts time.
+
+
+No crowd
+--------
+Skips the crowd jobs: fill buffers (0x4a14a00), indirect light (0x4a15340), cull/draw per view
+(0x4a15750) and cull batch (0x4a17250). In each one, `je exit` after `cmp [rdi+0xe18],0` becomes
+`nop; jmp` (0F84 -> 90E9 at 0x4A14A45, 0x4A1540B, 0x4A1581C, 0x4A1731C).
+Tested: big arenas went from 45-50 fps to 55-60 fps.
+
+No crowd + no crowd animation
+  The four patches above, plus the crowdFillAnim job (0x4A1E9A0) turned into `ret`.
+  Untested. Never use the animation patch without the crowd patches: the game crashes.
+
+Thinner crowd 75% / 50% / 25%
+  Replace the attendanceLevel shader constant read at 0x4A1C337 with a read of a constant 0.75 /
+  0.5 / 0.25. Untested; it may have no visible effect. Tick only one, and not together with
+  No crowd.

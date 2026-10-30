@@ -1,0 +1,138 @@
+{
+    "credits": [
+        "Kyty 2P session"
+    ],
+    "id": "PPSA23566",
+    "mods": [
+        {
+            "enabled": false,
+            "memory": [
+                {
+                    "off": "0F84",
+                    "offset": "0x04A14A45",
+                    "on": "90E9"
+                },
+                {
+                    "off": "0F84",
+                    "offset": "0x04A1540B",
+                    "on": "90E9"
+                },
+                {
+                    "off": "0F84",
+                    "offset": "0x04A1581C",
+                    "on": "90E9"
+                },
+                {
+                    "off": "0F84",
+                    "offset": "0x04A1731C",
+                    "on": "90E9"
+                }
+            ],
+            "name": "No crowd (skip crowd rendering jobs)",
+            "type": "checkbox"
+        },
+        {
+            "enabled": false,
+            "memory": [
+                {
+                    "off": "0F84",
+                    "offset": "0x04A14A45",
+                    "on": "90E9"
+                },
+                {
+                    "off": "0F84",
+                    "offset": "0x04A1540B",
+                    "on": "90E9"
+                },
+                {
+                    "off": "0F84",
+                    "offset": "0x04A1581C",
+                    "on": "90E9"
+                },
+                {
+                    "off": "0F84",
+                    "offset": "0x04A1731C",
+                    "on": "90E9"
+                },
+                {
+                    "off": "48",
+                    "offset": "0x04A1E9A0",
+                    "on": "C3"
+                }
+            ],
+            "name": "No crowd + no crowd animation (most FPS)",
+            "type": "checkbox"
+        },
+        {
+            "enabled": false,
+            "memory": [
+                {
+                    "off": "C4E2795880380A0000",
+                    "offset": "0x04A1C337",
+                    "on": "C4E2795805305AAB04"
+                }
+            ],
+            "name": "Thinner crowd 75% (tick only one; not with No crowd)",
+            "type": "checkbox"
+        },
+        {
+            "enabled": false,
+            "memory": [
+                {
+                    "off": "C4E2795880380A0000",
+                    "offset": "0x04A1C337",
+                    "on": "C4E2795805344DAB04"
+                }
+            ],
+            "name": "Thinner crowd 50% (tick only one; not with No crowd)",
+            "type": "checkbox"
+        },
+        {
+            "enabled": false,
+            "memory": [
+                {
+                    "off": "C4E2795880380A0000",
+                    "offset": "0x04A1C337",
+                    "on": "C4E27958057C4BAB04"
+                }
+            ],
+            "name": "Thinner crowd 25% (tick only one; not with No crowd)",
+            "type": "checkbox"
+        },
+        {
+            "enabled": true,
+            "memory": [
+                {
+                    "off": "00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+                    "offset": "0x07ED8640",
+                    "on": "4D89EC4C2B63384C89E0488B4B20488D14094839D0480F4FC24885C0480F4EC1488945C0488D7DC8488945C8E9F8CA15F8"
+                },
+                {
+                    "off": "00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+                    "offset": "0x07ED86C0",
+                    "on": "488B7B28BE01000000488B07FF10482B4338488B4B20488D14094839D0480F4FC24885C0480F4EC1488945C0C4C17A104704E99ECC15F8"
+                },
+                {
+                    "off": "488B43204D89EC4C2B6338488D7DC8488945C8",
+                    "offset": "0x00035156",
+                    "on": "E9E534EA079090909090909090909090909090"
+                },
+                {
+                    "off": "488B4320",
+                    "offset": "0x0003517B",
+                    "on": "488B45C0"
+                },
+                {
+                    "off": "C4C17A104704",
+                    "offset": "0x0003538F",
+                    "on": "E92C33EA0790"
+                }
+            ],
+            "name": "Real-time game speed v3 (UFC sim timer: real frame time, max 2x per step)",
+            "type": "checkbox"
+        }
+    ],
+    "name": "EA SPORTS UFC 6",
+    "process": "eboot.bin",
+    "version": "01.004.000"
+}
