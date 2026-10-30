@@ -1,0 +1,204 @@
+KytyPS5 local 2-player patch (UFC 6, PPSA23566)
+================================================
+
+Files
+  kyty_emulator_2p.exe   patched copy (the original kyty_emulator.exe is unchanged)
+  kyty_2p_listing.txt    full listing: every patched site + all new code, disassembled
+  kyty_2p_patcher.py     script that rebuilds kyty_emulator_2p.exe from the original
+                         (python kyty_2p_patcher.py kyty_emulator.exe out.exe listing.txt;
+                          needs the keystone-engine and capstone pip packages)
+
+  original  kyty_emulator_orig.exe  sha256 f4025d58c7ca4a129ba1de9f95b9f950abbf92316af9c67b0a57ad3ec6ed9d6b
+  patched   kyty_emulator_2p.exe    sha256 356f47fee38664bd4250e96fd8fdf6e42f5f8fe8b7602eec0c8fd2de9409d2b9
+            (v3, 2026-10-29: fixes a crash on the first DualSense rumble in v2. The hook at
+             0x140fd55a0 jumped back to 0x140fd55a4, inside its own patched bytes; it now jumps
+             back to 0x140fd55a5. The patcher now refuses any return into patched bytes.
+             v2 added player-2 vibration, light bar, adaptive triggers and motion (25d2fee2...,
+             do not use). v1 was 3004d06f... kyty_emulator.exe is currently a copy of v3.)
+
+What was already in the build
+  No 2nd-user or 2nd-pad support. UserService hardcodes the single configured user_id. The pad
+  code has one global Controller (state + 64-entry history) and handle 1 only. That Controller
+  already tracks every connected host device (m_connected_ids), but it only accepts input from
+  the first non-keyboard one; input from any other device is dropped. --keyboard-player is only
+  parsed (the README lists it as unsupported).
+
+What the patch does
+  User service (P2 = configured user_id + 1, i.e. 1001 with the default 1000)
+    - GetLoginUserIdList returns {1000, 1001, -1, -1}
+    - GetEvent returns Login(1000), then Login(1001), then "no event"
+    - GetUserName(1001) = "Player 2"; GetUserNumber(1001) = 2
+    - GamePresets/AgeLevel/Accessibility* getters accept 1001 as well as 1000
+  Pad
+    - A second Controller object is created next to the original one at startup.
+    - The first gamepad stays player 1 (unchanged code path, including the DualSense features).
+      The next gamepad that connects (or the first input from another gamepad) is bound to
+      player 2. Its buttons, sticks, triggers, touchpad and motion go into the second Controller.
+      The keyboard always stays player 1.
+    - PadOpen/PadGetHandle(1001, 0, 0) -> handle 2. PadReadState, PadRead,
+      PadGetControllerInformation and PadClose work for handle 2.
+    - Unplugging player 2 unbinds it; the next gamepad (re)connected becomes player 2.
+  Player 2 output (v2)
+    - PadSetVibration, PadSetLightBar, PadSetTriggerEffect, PadGetTriggerEffectState,
+      PadSetMotionSensorState and PadResetOrientation for handle 2 act on player 2's controller.
+      The other pad calls that only check the handle (PadResetLightBar, PadIsRemoteController,
+      PadSetVibrationMode, PadSetTiltCorrectionState, ...) now accept handle 2.
+    - The DualSense rumble path of "DualSense features" (dualsense-fix) drives one global
+      DualSense session, so it stays on player 1. Player 2's rumble goes through SDL's normal
+      per-controller rumble instead. Light bar and adaptive triggers already go through SDL
+      per controller.
+
+Known limits
+  - Player 2's DualSense speaker is not routed (controller audio is a separate path).
+  - The launcher's controller color (Settings > Controller, controller_color) overrides the
+    light bar of every controller, so both show that color instead of the game's colors.
+  - PadRead for handle 2 returns one sample (the current state), not the queued history.
+  - Two users are always logged in, even in single-player modes.
+  - If player 1's gamepad disconnects, the remaining gamepad also drives player 1 (upstream
+    behaviour of the original Controller).
+  - Other libraries (save data, trophies, NP, ...) still only know user 1000. If the game
+    calls one of them for 1001 it may get an error, or a hard stop if that HLE asserts.
+  - v1 (input + users) was confirmed working in UFC 6 local versus. The v2 output part is
+    checked statically (all branch/data targets resolve, every return lands on an original
+    instruction boundary, no stray byte changes) and the exe starts, but is not yet tested in game.
+
+Patched sites  (VA, file offset, purpose / original bytes / new bytes)
+  Image base 0x140000000; .text file offset = VA - 0x140001000 + 0x400
+  0x140fdfa86  (file 0x0fdee86)  g_controller creation: also create player-2 Controller
+      orig: 48890d03829502
+      new : e975c5be029090
+  0x14126f270  (file 0x126e670)  Controller SetAxis: route player-2 device
+      orig: 5541574156
+      new : e917ce9502
+  0x14126f040  (file 0x126e440)  Controller SetButton: route player-2 device
+      orig: 5541565657
+      new : e956d09502
+  0x14126fab0  (file 0x126eeb0)  Controller touch/sensor setter: route player-2 device
+      orig: 5541574156
+      new : e9f5c59502
+  0x14126fe00  (file 0x126f200)  Controller DualSense setter: route player-2 device
+      orig: 5541574156
+      new : e9b4c29502
+  0x14126f880  (file 0x126ec80)  Controller setter (0x14126f880): route player-2 device
+      orig: 5541565657
+      new : e943c89502
+  0x140fe1610  (file 0x0fe0a10)  Controller device connected: bind 2nd gamepad to player 2
+      orig: 5541574156
+      new : e9c2aabe02
+  0x14126ef60  (file 0x126e360)  Controller device removed: unbind player 2
+      orig: 5556574883ec30
+      new : e9b0d195029090
+  0x1410d5ec0  (file 0x10d52c0)  Controller::Open: user_id+1 -> handle 2
+      orig: 5541565657
+      new : e99e62af02
+  0x141271000  (file 0x1270400)  Controller::GetHandle: user_id+1 -> handle 2
+      orig: 5541565657
+      new : e9b6b19502
+  0x141271300  (file 0x1270700)  scePadClose: handle 2
+      orig: 554881ecb0020000
+      new : e9fbae9502909090
+  0x141271940  (file 0x1270d40)  scePadReadState: handle 2 reads player-2 Controller
+      orig: 4157415653
+      new : e981a99502
+  0x140196b40  (file 0x0195f40)  scePadRead: handle 2 reads player-2 Controller
+      orig: 5541574156
+      new : e9a057a303
+  0x140bce070  (file 0x0bcd470)  scePadGetControllerInformation: handle 2
+      orig: 554156534883ec20
+      new : e9ace2ff02909090
+  0x140fd5120  (file 0x0fd4520)  Controller handle check: accept handle 2 when player 2 is open
+      orig: 5657534883ec20
+      new : e91873bf029090
+  0x140fd4f30  (file 0x0fd4330)  scePadSetVibration: handle 2 -> player-2 Controller
+      orig: 554881ecc0020000
+      new : e92475bf02909090
+  0x141271a10  (file 0x1270e10)  scePadSetLightBar: handle 2 -> player-2 Controller
+      orig: 4883ec28488b05edb96b02
+      new : e97faa9502909090909090
+  0x141271a80  (file 0x1270e80)  scePadSetTriggerEffect: handle 2 -> player-2 Controller
+      orig: 4883ec28488b057db96b02
+      new : e951aa9502909090909090
+  0x141271af0  (file 0x1270ef0)  scePadGetTriggerEffectState: handle 2 -> player-2 Controller
+      orig: 55534881eca8020000
+      new : e926aa950290909090
+  0x1412714c0  (file 0x12708c0)  scePadSetMotionSensorState: handle 2 -> player-2 Controller
+      orig: 55534881eca8020000
+      new : e98fb0950290909090
+  0x141271890  (file 0x1270c90)  scePadResetOrientation: handle 2 -> player-2 Controller
+      orig: 4883ec28488b056dbb6b02
+      new : e9edac9502909090909090
+  0x140fd55a0  (file 0x0fd49a0)  DualSense HID rumble: skip for player 2 device (SDL rumble instead)
+      orig: 4156565755
+      new : e90b70bf02
+  0x140c55b70  (file 0x0c54f70)  sceUserServiceGetUserName: "Player 2" for user_id+1
+      orig: 4883ec284c8b0d35b4d102
+      new : e91d68f702909090909090
+  0x140c55c20  (file 0x0c55020)  sceUserServiceGetUserNumber: 2 for user_id+1
+      orig: 4883ec28488b05dd77cd02
+      new : e9c667f702909090909090
+  0x140c55ca1  (file 0x0c550a1)  UserService getter user check: also accept user_id+1
+      orig: 3979287549
+      new : e82869f702
+  0x140c55d21  (file 0x0c55121)  UserService getter user check: also accept user_id+1
+      orig: 3979287529
+      new : e8bf68f702
+  0x140c55d81  (file 0x0c55181)  UserService getter user check: also accept user_id+1
+      orig: 3979287529
+      new : e87668f702
+  0x140c55de1  (file 0x0c551e1)  UserService getter user check: also accept user_id+1
+      orig: 3979287529
+      new : e82d68f702
+  0x140c55e41  (file 0x0c55241)  UserService getter user check: also accept user_id+1
+      orig: 3979287529
+      new : e8e467f702
+  0x140c55ea1  (file 0x0c552a1)  UserService getter user check: also accept user_id+1
+      orig: 3979287529
+      new : e89b67f702
+  0x140c55f01  (file 0x0c55301)  UserService getter user check: also accept user_id+1
+      orig: 3979287529
+      new : e85267f702
+  0x140c55f61  (file 0x0c55361)  UserService getter user check: also accept user_id+1
+      orig: 3979287529
+      new : e80967f702
+  0x140c55b05  (file 0x0c54f05)  sceUserServiceGetLoginUserIdList: {user_id, user_id+1, -1, -1}
+      orig: 488b05a4b4d1028b4028890748c74704ffffffffc7470cffffffff31c04883c428c3
+      new : 488b05a4b4d1028b40288907ffc089470448c74708ffffffff31c04883c428c39090
+  0x140c55a75  (file 0x0c54e75)  sceUserServiceGetEvent: Login events for user_id, then user_id+1
+      orig: b807009680803d3f71ce0200751cc6053671ce0201c70700000000488b0519b5d1028b402889470431c04883c428c3
+      new : 0fb60d4471ce02b80700968083f9027318fe053471ce02c70700000000e809a266ff01c889470431c04883c428c390
+
+New section
+  .kyty2p  RVA 0x3bcc000 (VA 0x143bcc000), file offset 0x1ac7200, size 0x1000, RWX (0xE0000060)
+    0x143bcc000  code (1670 bytes)
+    0x143bcc800  Controller* player 2      0x143bcc808  bound device id (init -1)
+    0x143bcc80c  bound flag                0x143bcc810  "Player 2"
+  PE header: NumberOfSections 8 -> 9 (file 0x7e), new section header at file 0x2c0,
+             SizeOfImage 0x3bcc000 -> 0x3bcd000 (file 0xc8). File grows by 0x1000 bytes.
+
+Test plan
+  1. Close the launcher. The launcher always starts "kyty_emulator.exe", so swap the files
+     (in this folder, PowerShell):
+        Rename-Item kyty_emulator.exe kyty_emulator_orig.exe
+        Copy-Item kyty_emulator_2p.exe kyty_emulator.exe
+     Undo:  Remove-Item kyty_emulator.exe; Rename-Item kyty_emulator_orig.exe kyty_emulator.exe
+  2. Connect the controller for player 1 first (the DualSense), then the second controller.
+     Both connected before you press Start.
+  3. Start UFC 6 from the launcher as usual.
+     Check: the game boots and the menus work with controller 1 exactly as before.
+  4. Go to local versus (Fight Now / Play Now, versus a second player). Press buttons on
+     controller 2 when the game asks for player 2.
+     Check: a second player joins and is controlled by controller 2 only.
+  5. In a fight: move both fighters at the same time.
+     Check: each controller moves only its own fighter.
+     Check (v2): both controllers vibrate on hits, each only for its own fighter; controller 1's
+     rumble never stops or sticks because of controller 2; adaptive triggers resist on both
+     DualSenses where the game uses them.
+  6. Optional: unplug controller 2 in a menu and plug it back in.
+     Check: it controls player 2 again.
+
+  If something goes wrong, tell me which step and what you saw:
+    - crash or freeze at boot (before the menus)
+    - controller 2 does nothing / the game never offers player 2
+    - controller 2 moves player 1
+    - crash when player 2 joins or a fight starts (UFC may then be calling another library
+      for user 1001; the console window's last lines help, if the emulator shows one)
