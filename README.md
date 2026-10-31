@@ -7,6 +7,8 @@ controllers.
 
 No game files are included or modified.
 
+Questions, bug reports and test results: join the [Discord](https://discord.gg/a8uSHRk3N).
+
 ## Quick start
 
 1. Download **KytyPS5-UFC6-2player-v3.zip** from the
@@ -32,6 +34,11 @@ To use it, put `PPSA23566.json` in the `_Patches` folder next to `kyty_launcher.
 **Cheats**, import it from the Local cheats tab, tick the options you want and start the game.
 The game is patched in memory only; untick an option to get the stock game back. Details,
 addresses and measurements are in `UFC6_CHEAT_NOTES.txt`.
+
+For game version 01.005.000, download `PPSA23566_01.005.000.json` from the
+[cheats release](https://github.com/Danteh3-lab/kytyps5-2player-patch/releases/tag/ufc6-cheats-v2)
+and rename it to `PPSA23566.json`. It has the same cheats at the 1.005 addresses, but it has not
+been tested in game yet.
 
 ## What it does
 
