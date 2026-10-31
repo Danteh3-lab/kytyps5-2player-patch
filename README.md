@@ -7,7 +7,7 @@ controllers.
 
 No game files are included or modified.
 
-Questions, bug reports and test results: join the [Discord](https://discord.gg/a8uSHRk3N).
+Questions, bug reports and test results: join the [Discord](https://discord.gg/hZ6vJGMyaB).
 
 ## Quick start
 
