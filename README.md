@@ -26,7 +26,7 @@ No game files are included or modified.
 - **No crowd**: skips crowd rendering. Big arenas went from 45-50 to 55-60 fps.
 - **Unlock all fighters**: every fighter on fighter select counts as unlocked. Your save is not
   changed.
-- No crowd + no crowd animation, and Thinner crowd 75/50/25%: untested.
+- No crowd + no crowd animation: untested.
 
 To use it, put `PPSA23566.json` in the `_Patches` folder next to `kyty_launcher.exe`. Then open
 **Cheats**, import it from the Local cheats tab, tick the options you want and start the game.

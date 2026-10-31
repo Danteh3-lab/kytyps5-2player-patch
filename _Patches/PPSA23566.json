@@ -64,42 +64,6 @@
             "type": "checkbox"
         },
         {
-            "enabled": false,
-            "memory": [
-                {
-                    "off": "C4E2795880380A0000",
-                    "offset": "0x04A1C337",
-                    "on": "C4E2795805305AAB04"
-                }
-            ],
-            "name": "Thinner crowd 75% (tick only one; not with No crowd)",
-            "type": "checkbox"
-        },
-        {
-            "enabled": false,
-            "memory": [
-                {
-                    "off": "C4E2795880380A0000",
-                    "offset": "0x04A1C337",
-                    "on": "C4E2795805344DAB04"
-                }
-            ],
-            "name": "Thinner crowd 50% (tick only one; not with No crowd)",
-            "type": "checkbox"
-        },
-        {
-            "enabled": false,
-            "memory": [
-                {
-                    "off": "C4E2795880380A0000",
-                    "offset": "0x04A1C337",
-                    "on": "C4E27958057C4BAB04"
-                }
-            ],
-            "name": "Thinner crowd 25% (tick only one; not with No crowd)",
-            "type": "checkbox"
-        },
-        {
             "enabled": true,
             "memory": [
                 {

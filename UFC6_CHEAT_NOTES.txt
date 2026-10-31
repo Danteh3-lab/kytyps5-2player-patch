@@ -56,11 +56,6 @@ No crowd + no crowd animation
   The four patches above, plus the crowdFillAnim job (0x4A1E9A0) turned into `ret`.
   Untested. Never use the animation patch without the crowd patches: the game crashes.
 
-Thinner crowd 75% / 50% / 25%
-  Replace the attendanceLevel shader constant read at 0x4A1C337 with a read of a constant 0.75 /
-  0.5 / 0.25. Untested; it may have no visible effect. Tick only one, and not together with
-  No crowd.
-
 
 Unlock all fighters
 -------------------
