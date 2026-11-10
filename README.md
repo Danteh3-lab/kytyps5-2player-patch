@@ -11,8 +11,8 @@ Questions, bug reports and test results: join the [Discord](https://discord.gg/h
 
 ## Quick start
 
-1. Download **KytyPS5-UFC6-2player-v3.zip** from the
-   [Releases page](https://github.com/Danteh3-lab/kytyps5-2player-patch/releases/tag/v3)
+1. Download **KytyPS5-UFC6-2player-v4.zip** from the
+   [Releases page](https://github.com/Danteh3-lab/kytyps5-2player-patch/releases/tag/v4)
    (the full emulator, already patched) and unpack it into a folder of its own.
 2. Run `kyty_launcher.exe` and add the folder that contains your own UFC 6 dump as a game folder.
 3. Connect controller 1 first, then controller 2.
@@ -62,7 +62,7 @@ site and refuses to run on anything else:
 | file | sha256 |
 |---|---|
 | original `kyty_emulator.exe` (KytyPS5 0.3.0, git `ufc-meta-clear-htile-only-20261026-16-g3309ab23f`) | `f4025d58c7ca4a129ba1de9f95b9f950abbf92316af9c67b0a57ad3ec6ed9d6b` |
-| patched `kyty_emulator_2p.exe` (v3) | `356f47fee38664bd4250e96fd8fdf6e42f5f8fe8b7602eec0c8fd2de9409d2b9` |
+| patched `kyty_emulator_2p.exe` (v4) | `66a09d84174146ca5fa8ffd9f0740985c8bce069475d766a1a7b960195458f77` |
 
 ## Use
 
@@ -96,6 +96,8 @@ Connect player 1's controller first, then player 2's, and start the game from th
 
 ## Known limits
 
+- R2/L2 count as pressed at any trigger value above 0 (upstream behaviour, no deadzone). A pad
+  whose trigger does not rest at exactly 0 shows R2 held all the time, on either player.
 - Player 2's DualSense speaker is not routed.
 - `scePadRead` for player 2 returns one sample (the current state), not the queued history.
 - Two users are always logged in, even in single-player modes.

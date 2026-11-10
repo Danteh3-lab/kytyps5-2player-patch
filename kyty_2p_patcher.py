@@ -212,17 +212,45 @@ h_disc:
   jne disc_go
   mov dword ptr [RIP({D_P2CL})], 0
   mov dword ptr [RIP({D_P2ID})], -1
-  push rax
-  mov rax, qword ptr [RIP({D_G2})]
-  mov byte ptr [rax + 0x2c], 0
-  mov dword ptr [rax + 0x28], -1
-  pop rax
+  push rcx
+  push rdx
+  mov rcx, qword ptr [RIP({D_G2})]
+  mov byte ptr [rcx + 0x2c], 0
+  mov dword ptr [rcx + 0x28], -1
+  sub rsp, 0x28
+; v4: drop player 2's held buttons/triggers, so no stale R2 after a reconnect
+  call reset_orig
+  add rsp, 0x28
+  pop rdx
+  pop rcx
 disc_go:
   push rbp
   push rsi
   push rdi
   sub rsp, 0x30
   jmp 0x14126ef67
+
+; --- GameController::ResetInputState(rcx=this). Upstream calls it on g_controller only (system
+;     dialog / IME / settings overlay takes or gives back the pads, so releases were never seen).
+;     v4: when it runs for player 1, reset player 2 as well, so a held R2 cannot stay stuck.
+h_reset:
+  cmp rcx, qword ptr [RIP({G})]
+  jne reset_orig
+  mov rax, qword ptr [RIP({D_G2})]
+  test rax, rax
+  jz reset_orig
+  push rcx
+  mov rcx, rax
+  sub rsp, 0x20
+  call reset_orig
+  add rsp, 0x20
+  pop rcx
+reset_orig:
+  push rbp
+  push rsi
+  push rdi
+  sub rsp, 0xd0
+  jmp 0x14127087a
 
 ; --- Controller::Open(rcx=this, edx=user, r8d=type, r9d=index) -> handle 2 for user_id+1
 h_open:
@@ -694,6 +722,7 @@ hook(0x14126fe00, L['h_sensor2'], 5, '5541574156', 'Controller DualSense setter:
 hook(0x14126f880, L['h_set5'], 5, '5541565657', 'Controller setter (0x14126f880): route player-2 device')
 hook(0x140fe1610, L['h_conn'], 5, '5541574156', 'Controller device connected: bind 2nd gamepad to player 2')
 hook(0x14126ef60, L['h_disc'], 7, '5556574883ec30', 'Controller device removed: unbind player 2')
+hook(0x141270870, L['h_reset'], 10, '5556574881ecd0000000', 'GameController::ResetInputState: also reset player 2 (v4)')
 hook(0x1410d5ec0, L['h_open'], 5, '5541565657', 'Controller::Open: user_id+1 -> handle 2')
 hook(0x141271000, L['h_geth'], 5, '5541565657', 'Controller::GetHandle: user_id+1 -> handle 2')
 hook(0x141271300, L['h_close'], 8, '554881ecb0020000', 'scePadClose: handle 2')

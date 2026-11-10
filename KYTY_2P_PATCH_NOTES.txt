@@ -9,12 +9,19 @@ Files
                           needs the keystone-engine and capstone pip packages)
 
   original  kyty_emulator_orig.exe  sha256 f4025d58c7ca4a129ba1de9f95b9f950abbf92316af9c67b0a57ad3ec6ed9d6b
-  patched   kyty_emulator_2p.exe    sha256 356f47fee38664bd4250e96fd8fdf6e42f5f8fe8b7602eec0c8fd2de9409d2b9
+  patched   kyty_emulator_2p.exe    sha256 66a09d84174146ca5fa8ffd9f0740985c8bce069475d766a1a7b960195458f77
+            (v4, 2026-11-10: fixes player 2's R2 (or any button) staying held.
+             - GameController::ResetInputState (0x141270870) is hooked: when the emulator resets
+               player 1 (a system dialog, IME or settings overlay takes or gives back the pads,
+               so the button releases never reach the game), player 2 is reset too.
+             - Unplugging player 2's pad now also resets player 2's state, so a trigger held at
+               the moment the pad dropped is not still "pressed" when it reconnects.
+             v3 was 356f47fe...)
             (v3, 2026-10-29: fixes a crash on the first DualSense rumble in v2. The hook at
              0x140fd55a0 jumped back to 0x140fd55a4, inside its own patched bytes; it now jumps
              back to 0x140fd55a5. The patcher now refuses any return into patched bytes.
              v2 added player-2 vibration, light bar, adaptive triggers and motion (25d2fee2...,
-             do not use). v1 was 3004d06f... kyty_emulator.exe is currently a copy of v3.)
+             do not use). v1 was 3004d06f...)
 
 What was already in the build
   No 2nd-user or 2nd-pad support. UserService hardcodes the single configured user_id. The pad
@@ -49,6 +56,9 @@ What the patch does
       per controller.
 
 Known limits
+  - Upstream counts R2/L2 as pressed at any trigger value above 0 (no deadzone). A pad whose
+    trigger does not rest at exactly 0 (worn or third-party) shows R2 held all the time, on
+    either player. Not changed by this patch.
   - Player 2's DualSense speaker is not routed (controller audio is a separate path).
   - The launcher's controller color (Settings > Controller, controller_color) overrides the
     light bar of every controller, so both show that color instead of the game's colors.
